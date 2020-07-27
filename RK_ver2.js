@@ -1,4 +1,4 @@
-function RK(sysDiffEq,init_cond,h){
+function RK(sysDiffEq,init_cond,h){ //takes the eom,initial conditions and the timestep
 // dimensions of the system
 	let dim = init_cond.length
 //create matrix that stores k values (dimension of the system x 4)
