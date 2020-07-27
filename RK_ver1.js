@@ -45,7 +45,7 @@ function RK4d(sysDiffEq,init_cond,h){
     }
   return nextStep;
 }
-
+//example of a system
 function sysDiffEq(x){
   let dx = Array(4);
    dx[0] = x[0]+x[1];
