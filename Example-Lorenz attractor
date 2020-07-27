@@ -46,7 +46,7 @@ function RK(sysDiffEq,init_cond,h){
   	return nextStep;
 }
 
-//Lorenz system
+//Lorenz system (chaotic)
 function sysDiffEq(x){
   let dx = Array(3);
    dx[0] = 10*(x[1]-x[0]);
