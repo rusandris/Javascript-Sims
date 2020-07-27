@@ -68,6 +68,6 @@ function draw() {
   init_cond = RK(sysDiffEq,init_cond,h);
   console.log(init_cond);
   fill(10,100,50);
-  ellipse(200+10*init_cond[0],10*init_cond[2],5,5); //drawing the attractor minimally
+  ellipse(200+8*init_cond[0],8*init_cond[2],5,5); //drawing the attractor minimally
 
 }
