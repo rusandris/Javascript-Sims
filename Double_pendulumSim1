@@ -1,0 +1,130 @@
+//parameters
+let param = {
+  l1: 1.0,
+  l2: 1.0,
+  m1: 1.0,
+  m2: 1.0,
+  g: 10.0,
+  hinge: [200,0],
+  scaling_factor: 100,
+  dt:0.01
+}
+
+let dynVariables = [0.0,0.0,Math.PI/6,Math.PI/2] //initial conditions for the dynamical variables
+
+// ball objects
+let ball1 = {
+ x:undefined,
+ y:undefined
+}
+
+let ball2 = {
+  x:undefined, 
+  y:undefined,
+  history: [] // used later for the trace
+}
+
+//couple of other constants
+let relmass = param.m2/(param.m1+param.m2)
+let length_ratio = param.l2/param.l1
+
+// RK solver
+function RK(sysDiffEq,init_cond,h){
+// dimensions of the system
+	let dim = init_cond.length
+//create matrix that stores k values (dimension of the system x 4)
+	let kMatrix = Array(dim);
+	for(i=0;i<dim;i++){
+		kMatrix[i] = Array(4);
+	}
+
+	// calc the k terms for each
+	for(j=0;j<4;j++){
+		switch(j) {
+		//calculate k1 values
+          case 0:{
+			for(i=0;i<dim;i++){
+				kMatrix[i][j] = sysDiffEq(init_cond)[i]; //and plug them in the matrix
+			}
+	      	}break;
+	      	
+		case 1:
+	      	case 2:{
+			let pluginValues = [];
+			for(i=0;i<dim;i++){
+			pluginValues.push(init_cond[i]+h/2*kMatrix[i][j-1]); //calculate k2 or k3 values 
+			}
+			for(i=0;i<dim;i++){
+			  kMatrix[i][j] = sysDiffEq(pluginValues)[i]; //store them in the matrix
+			}
+	      	}break;
+	      	case 3: {
+			let pluginValues = [];
+			for(i=0;i<dim;i++){
+			  pluginValues.push(init_cond[i]+h*kMatrix[i][j-1]); //calculate k4 values 
+			}
+			for(i=0;i<dim;i++){
+			  kMatrix[i][j] = sysDiffEq(pluginValues)[i]; //store them in the matrix
+			}
+	       }break;
+	       }
+	}
+	// calc the next step for each
+	let nextStep = Array(dim);    
+	for (i=0;i<dim;i++){
+		nextStep[i] = init_cond[i] + 1/6*h*(kMatrix[i][0]+2*kMatrix[i][0]+2*kMatrix[i][2]+ kMatrix[i][3]); // RK formula
+	}
+  	return nextStep;
+}
+// declaring the system of diff equations in a function for the double pendulum
+function double_pendulum(x){
+  let dx = Array(4);
+  let cosine = Math.cos(x[2] - x[3]);
+  let sine = Math.sin(x[2]- x[3]);
+  
+  dx[0] = (param.g*Math.sin(x[3])*cosine- cosine*sine*Math.pow(x[2],2) - length_ratio*sine*Math.pow(x[0],2)-1/relmass/param.l1*param.g*Math.sin(x[2]))/(1/relmass -Math.pow(cosine,2)); // derivative of the angular velocity for the first angle
+  
+  dx[1] = 1/length_ratio*(sine*Math.pow(x[0],2)-cosine*dx[0])-param.g/param.l2*Math.sin(x[3]); // derivative of the angular velocity for the second angle
+    
+  dx[2] = x[0]; // derivative of the first angle
+  
+  dx[3] = x[1]; // darivative of the second angle
+   return dx
+} 
+
+
+function setup() {
+  createCanvas(400, 400);
+  extraCanvas = createGraphics(400,400);
+}
+
+function draw() {
+  background(220);
+  extraCanvas.clear(); //clearing the extra layer
+  
+  //updating the positions
+  ball1.x = param.l1*Math.sin(dynVariables[2]);
+  ball1.y = param.l1*Math.cos(dynVariables[2]);
+  ball2.x = ball1.x + param.l2*Math.sin(dynVariables[3]);
+  ball2.y = ball1.y + param.l2*Math.cos(dynVariables[3]);
+
+  //plot the pendulum
+  
+  // first ball
+  fill(0,100,50);
+  ellipse(param.hinge[0]+param.scaling_factor*ball1.x,
+          param.scaling_factor*ball1.y,20,20);
+  line(param.hinge[0],param.hinge[1],param.hinge[0]+
+param.scaling_factor*ball1.x,param.scaling_factor*ball1.y);
+
+  //second ball
+  fill(0,50,100);
+  ellipse(param.hinge[0]+param.scaling_factor*ball2.x,
+          param.scaling_factor*ball2.y,20,20);
+  line(param.hinge[0]+param.scaling_factor*ball1.x,param.scaling_factor*ball1.y,
+  param.hinge[0]+param.scaling_factor*ball2.x,param.scaling_factor*ball2.y)
+
+  //time-evolution of the eoms
+  dynVariables = RK(double_pendulum,dynVariables,param.dt);
+  console.log(dynVariables);
+}
