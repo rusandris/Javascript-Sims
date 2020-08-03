@@ -3,6 +3,7 @@ Documentation of ODE solvers written for the JS simulation project of [ThePhysHu
 ## Usage
 This is not a library yet, since there are 3 solvers at the moment, which still can be optimized and developed, but if the number of solvers and features grow, they can be worked into a mini-library.  
 **You can use the solvers by copying the solver function and calling it on your system.**   
+**All solvers use the p5.js draw() function loop, so you don't have to implement them inside a user defined loop. All of them work the same way: the solvers return the next timestep that replaces(updates) the values in the dynamical variables container array defined by the user.**
 ## Declaring ODE systems  
 Both the *Euler* and *RK* solvers require that the system of differential equations are written in first order form: ![SysDiffEq](https://github.com/rusandris/Javascript-Sims/blob/master/CodeCogsEqn.pdf)  
 For autonomous systems this would look something like this in code:  
