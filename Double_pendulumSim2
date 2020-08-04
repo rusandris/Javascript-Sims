@@ -1,0 +1,118 @@
+function velocityVerlet(sysDiffEq,init_cond,h){
+	dim = init_cond.length;
+	nextStep  = init_cond;
+	for(i=0;i<dim;i+=2){
+		nextStep[i] += 0.5*h*sysDiffEq(init_cond)[i] //adjusting velocity a half step for each
+	}
+	
+	for(i=1;i<dim;i+=2){
+		nextStep[i] +=  h*nextStep[i-1] //adjusting each position
+	}
+	
+	for(i=0;i<dim;i+=2){
+		nextStep[i] += 0.5*h*sysDiffEq(nextStep)[i] //finally readjusting the velocities 
+	}
+
+	return nextStep;
+}
+
+function drawTrace(obj,canvas,trace_length){ //keep track of the trajectory
+	let pos = createVector(param.hinge[0]+param.scaling_factor*obj.x,
+          param.scaling_factor*obj.y)
+
+  	obj.history.push(pos);
+	if(obj.history.length>trace_length){
+		obj.history.splice(0,1);
+	}
+  for (var i = 0;i<obj.history.length;i++) {
+    canvas.noStroke();
+    canvas.fill(0,i*10);
+    canvas.ellipse(obj.history[i].x,obj.history[i].y,4,4)
+  }
+  image(canvas,0,0);
+}
+
+//parameters
+let param = {
+  l1: 1.0,
+  l2: 1.0,
+  m1: 1.0,
+  m2: 1.0,
+  g: 10.0,
+  hinge: [200,0],
+  scaling_factor: 100,
+  dt:0.01
+}
+
+let dynVariables = [0.0,Math.PI/3,0.0,Math.PI/2] //initial conditions for the dynamical variables
+
+// ball objects
+let ball1 = {
+ x:undefined,
+ y:undefined
+}
+
+let ball2 = {
+  x:undefined, 
+  y:undefined,
+  history: [] // used later for the trace
+}
+
+//couple of other constants
+let relmass = param.m2/(param.m1+param.m2)
+let length_ratio = param.l2/param.l1
+
+
+// declaring the system of diff equations in a function for the double pendulum
+function double_pendulum(x){
+  let dx = Array(4);
+  let cosine = Math.cos(x[1] - x[3]);
+  let sine = Math.sin(x[1]- x[3]);
+  
+  dx[0] = (param.g*Math.sin(x[3])*cosine- cosine*sine*Math.pow(x[0],2) - length_ratio*sine*Math.pow(x[2],2)-1/relmass/param.l1*param.g*Math.sin(x[1]))/(1/relmass -Math.pow(cosine,2)); // derivative of the angular velocity for the first angle
+  dx[1] = x[0]; // derivative of the first angle
+  
+  dx[2] = 1/length_ratio*(sine*Math.pow(x[0],2)-cosine*dx[0])-param.g/param.l2*Math.sin(x[3]); // derivative of the angular velocity for the second angle
+    
+  dx[3] = x[2]; // derivative of the second angle
+  
+   return dx
+} 
+
+
+function setup() {
+  createCanvas(400, 400);
+  extraCanvas = createGraphics(400,400);
+  extraCanvas.clear(); // make the extracanvas transparent
+}
+
+function draw() {
+  background(220);
+  extraCanvas.clear(); //clearing the extra layer
+  
+  //updating the positions
+  ball1.x = param.l1*Math.sin(dynVariables[1]);
+  ball1.y = param.l1*Math.cos(dynVariables[1]);
+  ball2.x = ball1.x + param.l2*Math.sin(dynVariables[3]);
+  ball2.y = ball1.y + param.l2*Math.cos(dynVariables[3]);
+
+  //plot the pendulum
+  
+  // first ball
+  fill(0,100,50);
+  ellipse(param.hinge[0]+param.scaling_factor*ball1.x,
+          param.scaling_factor*ball1.y,20,20);
+  line(param.hinge[0],param.hinge[1],param.hinge[0]+
+param.scaling_factor*ball1.x,param.scaling_factor*ball1.y);
+  //second ball
+  fill(0,50,100);
+  ellipse(param.hinge[0]+param.scaling_factor*ball2.x,
+          param.scaling_factor*ball2.y,20,20);
+  line(param.hinge[0]+param.scaling_factor*ball1.x,                   param.scaling_factor*ball1.y,             param.hinge[0]+param.scaling_factor*ball2.x,
+                   param.scaling_factor*ball2.y)
+ 
+   drawTrace(ball2,extraCanvas,200); //drawing the trajectory
+  //time-evolution of the eoms
+  dynVariables = velocityVerlet(double_pendulum,dynVariables,param.dt);
+
+}
