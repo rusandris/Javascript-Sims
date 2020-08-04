@@ -6,7 +6,9 @@ This is not a library yet, since there are 3 solvers at the moment, which still 
 
 **All solvers use the p5.js draw() function loop, so you don't have to implement them inside a user defined loop. All of them work the same way: the solvers return the next timestep that replaces(updates) the values in the dynamical variables container array defined by the user.**
 ## Declaring ODE systems  
-Both the *Euler* and *RK* solvers require that the system of differential equations are written in first order form: ![SysDiffEq form](https://github.com/rusandris/Javascript-Sims/blob/readme-edits/EulerRK_eqformat.pdf)  
+Both the *Euler* and *RK* solvers require that the system of differential equations are written in first order form: 
+
+![](https://github.com/rusandris/Javascript-Sims/blob/readme-edits/EulerRK_eqformat.png)  
 For autonomous systems this would look something like this in code:  
 
 ```
@@ -19,7 +21,10 @@ function sysDiffEq(x){
 }
 
 ```
-For the *VelocityVerlet* solver, it is the same, but the algorithm assumes a particular ordering: for each coordinate, first the derivative of generalized velocity, then comes the derivative of the corresponding generalized coordinate: ![VelocityVerlet form](https://github.com/rusandris/Javascript-Sims/blob/readme-edits/velocityVerlet_eqformat.pdf)
+For the *VelocityVerlet* solver, it is the same, but the algorithm assumes a particular ordering: for each coordinate, first the derivative of generalized velocity, then comes the derivative of the corresponding generalized coordinate: 
+
+![](https://github.com/rusandris/Javascript-Sims/blob/readme-edits/velocityVerlet_eqformat.png)  
+
 In code:
 ```
 function sysDiffEq(x){
