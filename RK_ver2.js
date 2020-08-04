@@ -43,6 +43,6 @@ function RK(sysDiffEq,init_cond,h){ //takes the eom,initial conditions and the t
 	for (i=0;i<dim;i++){
 		nextStep[i] = init_cond[i] + 1/6*h*(kMatrix[i][0]+2*kMatrix[i][0]+2*kMatrix[i][2]+ kMatrix[i][3]); // RK formula
 	}
-  	return nextStep;
+  	return nextStep; 
 }
 
