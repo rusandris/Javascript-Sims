@@ -21,13 +21,28 @@ let ball1 = {
 let ball2 = {
   x:undefined, 
   y:undefined,
-  history: [] // used later for the trace
+  history: [] // used later for the trajectory
 }
 
 //couple of other constants
 let relmass = param.m2/(param.m1+param.m2)
 let length_ratio = param.l2/param.l1
 
+function drawTrace(obj,canvas,trace_length){ //keep track of the trajectory
+	let pos = createVector(param.hinge[0]+param.scaling_factor*obj.x,
+          param.scaling_factor*obj.y)
+
+  	obj.history.push(pos);
+	if(obj.history.length>trace_length){
+		obj.history.splice(0,1);
+	}
+  for (var i = 0;i<obj.history.length;i++) {
+    canvas.noStroke();
+    canvas.fill(0,i*10);
+    canvas.ellipse(obj.history[i].x,obj.history[i].y,4,4)
+  }
+  image(canvas,0,0);
+}
 // RK solver
 function RK(sysDiffEq,init_cond,h){
 // dimensions of the system
@@ -82,7 +97,7 @@ function double_pendulum(x){
   let cosine = Math.cos(x[2] - x[3]);
   let sine = Math.sin(x[2]- x[3]);
   
-  dx[0] = (param.g*Math.sin(x[3])*cosine- cosine*sine*Math.pow(x[2],2) - length_ratio*sine*Math.pow(x[0],2)-1/relmass/param.l1*param.g*Math.sin(x[2]))/(1/relmass -Math.pow(cosine,2)); // derivative of the angular velocity for the first angle
+  dx[0] = (param.g*Math.sin(x[3])*cosine- cosine*sine*Math.pow(x[0],2) - length_ratio*sine*Math.pow(x[1],2)-1/relmass/param.l1*param.g*Math.sin(x[2]))/(1/relmass -Math.pow(cosine,2)); // derivative of the angular velocity for the first angle
   
   dx[1] = 1/length_ratio*(sine*Math.pow(x[0],2)-cosine*dx[0])-param.g/param.l2*Math.sin(x[3]); // derivative of the angular velocity for the second angle
     
@@ -116,15 +131,15 @@ function draw() {
           param.scaling_factor*ball1.y,20,20);
   line(param.hinge[0],param.hinge[1],param.hinge[0]+
 param.scaling_factor*ball1.x,param.scaling_factor*ball1.y);
-
   //second ball
   fill(0,50,100);
   ellipse(param.hinge[0]+param.scaling_factor*ball2.x,
           param.scaling_factor*ball2.y,20,20);
-  line(param.hinge[0]+param.scaling_factor*ball1.x,param.scaling_factor*ball1.y,
-  param.hinge[0]+param.scaling_factor*ball2.x,param.scaling_factor*ball2.y)
+  line(param.hinge[0]+param.scaling_factor*ball1.x,                   param.scaling_factor*ball1.y,             param.hinge[0]+param.scaling_factor*ball2.x,
+                   param.scaling_factor*ball2.y)
 
   //time-evolution of the eoms
   dynVariables = RK(double_pendulum,dynVariables,param.dt);
-  console.log(dynVariables);
+  // drawing the trajectory of the second ball
+  drawTrace(ball2,extraCanvas,300)
 }
